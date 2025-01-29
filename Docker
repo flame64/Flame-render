@@ -1,0 +1,29 @@
+# Use a lightweight Linux base image
+FROM debian:latest
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install required dependencies
+RUN apt update && apt install -y \
+    curl \
+    sudo \
+    gnupg \
+    software-properties-common \
+    && curl -fsSL https://download.pufferpanel.com/keys.asc | gpg --dearmor -o /usr/share/keyrings/pufferpanel-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/pufferpanel-archive-keyring.gpg] https://download.pufferpanel.com/repos/apt/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/pufferpanel.list \
+    && apt update && apt install -y pufferpanel \
+    && rm -rf /var/lib/apt/lists/*
+
+# Expose required ports
+EXPOSE 8080 5657
+
+# Create a volume for persistent storage
+VOLUME [ "/etc/pufferpanel", "/var/lib/pufferpanel" ]
+
+# Copy custom config (if needed)
+# COPY config.json /etc/pufferpanel/config.json
+
+# Start PufferPanel service
+CMD ["pufferpanel", "run"]
+1q
